@@ -1,5 +1,6 @@
 package gui;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,19 +11,20 @@ import logica.Procesos;
 
 public class VentanaOperario extends JFrame implements ActionListener {
 
+    // Componentes de la interfaz
     private JLabel etiTitulo, lblDoc, lblNombre, lblSueldo, lblAntiguedad, lblResultado;
     private JTextField txtDoc, txtNombre, txtSueldo, txtAntiguedad;
-    private JButton btnCalcular, btnConsultar, btnListar;
+    private JButton btnCalcular, btnConsultar, btnListar, btnLimpiar;
     
-    // Instanciamos nuestras capas de lógica y datos
+    // Instancias de lógica y datos (Globales para que no se pierda la info)
     ModeloDatos miModelo = new ModeloDatos();
     Procesos miProceso = new Procesos();
 
     public VentanaOperario() {
         setTitle("Cálculo de Aumentos - Talento Humano");
-        setSize(450, 500);
+        setSize(450, 520);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(null); // Centra la ventana
         setLayout(null);
         iniciarComponentes();
     }
@@ -33,20 +35,28 @@ public class VentanaOperario extends JFrame implements ActionListener {
         etiTitulo.setBounds(100, 20, 300, 30);
         add(etiTitulo);
 
-        // Campos de entrada
-        lblDoc = new JLabel("Documento:"); lblDoc.setBounds(50, 80, 100, 25); add(lblDoc);
-        txtDoc = new JTextField(); txtDoc.setBounds(160, 80, 150, 25); add(txtDoc);
+        // Etiquetas y Campos de texto
+        lblDoc = new JLabel("Documento:"); 
+        lblDoc.setBounds(50, 80, 100, 25); add(lblDoc);
+        txtDoc = new JTextField(); 
+        txtDoc.setBounds(180, 80, 150, 25); add(txtDoc);
 
-        lblNombre = new JLabel("Nombre:"); lblNombre.setBounds(50, 120, 100, 25); add(lblNombre);
-        txtNombre = new JTextField(); txtNombre.setBounds(160, 120, 150, 25); add(txtNombre);
+        lblNombre = new JLabel("Nombre:"); 
+        lblNombre.setBounds(50, 120, 100, 25); add(lblNombre);
+        txtNombre = new JTextField(); 
+        txtNombre.setBounds(180, 120, 150, 25); add(txtNombre);
 
-        lblSueldo = new JLabel("Sueldo Base:"); lblSueldo.setBounds(50, 160, 100, 25); add(lblSueldo);
-        txtSueldo = new JTextField(); txtSueldo.setBounds(160, 160, 150, 25); add(txtSueldo);
+        lblSueldo = new JLabel("Sueldo Base ($):"); 
+        lblSueldo.setBounds(50, 160, 120, 25); add(lblSueldo);
+        txtSueldo = new JTextField(); 
+        txtSueldo.setBounds(180, 160, 150, 25); add(txtSueldo);
 
-        lblAntiguedad = new JLabel("Antigüedad (años):"); lblAntiguedad.setBounds(50, 200, 120, 25); add(lblAntiguedad);
-        txtAntiguedad = new JTextField(); txtAntiguedad.setBounds(160, 200, 150, 25); add(txtAntiguedad);
+        lblAntiguedad = new JLabel("Antigüedad (años):"); 
+        lblAntiguedad.setBounds(50, 200, 130, 25); add(lblAntiguedad);
+        txtAntiguedad = new JTextField(); 
+        txtAntiguedad.setBounds(180, 200, 150, 25); add(txtAntiguedad);
 
-        // Botones
+        // Botones de acción
         btnCalcular = new JButton("Calcular y Guardar");
         btnCalcular.setBounds(50, 260, 160, 30);
         btnCalcular.addActionListener(this);
@@ -57,67 +67,90 @@ public class VentanaOperario extends JFrame implements ActionListener {
         btnConsultar.addActionListener(this);
         add(btnConsultar);
 
-        btnListar = new JButton("Ver Todos");
+        btnListar = new JButton("Ver Lista en Consola");
         btnListar.setBounds(50, 300, 290, 30);
         btnListar.addActionListener(this);
         add(btnListar);
+        
+        btnLimpiar = new JButton("Limpiar");
+        btnLimpiar.setBounds(50, 340, 290, 30);
+        btnLimpiar.addActionListener(this);
+        add(btnLimpiar);
 
-        // Etiqueta de resultado
-        lblResultado = new JLabel("Sueldo Final: $");
-        lblResultado.setFont(new Font("Arial", Font.ITALIC, 14));
-        lblResultado.setBounds(50, 350, 350, 30);
+        // Resultado visual
+        lblResultado = new JLabel("Sueldo a pagar: $ 0.00");
+        lblResultado.setFont(new Font("Arial", Font.BOLD, 15));
+        lblResultado.setForeground(new Color(0, 102, 0)); // Color verde oscuro
+        lblResultado.setBounds(50, 400, 350, 30);
         add(lblResultado);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnCalcular) {
-            registrar();
-        }
-        if (e.getSource() == btnConsultar) {
-            consultar();
-        }
-        if (e.getSource() == btnListar) {
-            System.out.println(miModelo.consultarListaCompleta()); // Salida por consola según PDF
+            hacerRegistro();
+        } else if (e.getSource() == btnConsultar) {
+            hacerConsulta();
+        } else if (e.getSource() == btnListar) {
+            // Imprime en la consola de Eclipse la lista completa
+            System.out.println(miModelo.consultarListaCompleta());
+        } else if (e.getSource() == btnLimpiar) {
+            limpiarCampos();
         }
     }
 
-    private void registrar() {
+    private void hacerRegistro() {
         try {
+            // Capturamos y convertimos datos
+            String doc = txtDoc.getText();
+            String nom = txtNombre.getText();
             double sueldo = Double.parseDouble(txtSueldo.getText());
             int ant = Integer.parseInt(txtAntiguedad.getText());
 
-            // Llamamos a la lógica para el aumento
+            // Usamos la lógica de la clase Procesos
             double sFinal = miProceso.calcularAumento(sueldo, ant);
             
+            // Creamos el objeto Operario
             Operario op = new Operario();
-            op.setDocumento(txtDoc.getText());
-            op.setNombre(txtNombre.getText());
+            op.setDocumento(doc);
+            op.setNombre(nom);
             op.setSueldo(sueldo);
             op.setAntiguedad(ant);
             op.setSueldoFinal(sFinal);
 
+            // Guardamos en el modelo de datos
             miModelo.registrarOperario(op);
-            lblResultado.setText("Sueldo Final: $" + String.format("%.2f", sFinal));
-            JOptionPane.showMessageDialog(this, "Operario registrado con éxito.");
             
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Por favor verifique los datos numéricos.");
+            lblResultado.setText("Sueldo a pagar: $ " + String.format("%.2f", sFinal));
+            JOptionPane.showMessageDialog(this, "Operario registrado correctamente.");
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Error: Ingrese valores numéricos válidos en Sueldo y Antigüedad.");
         }
     }
 
-    private void consultar() {
-        String doc = JOptionPane.showInputDialog("Ingrese el documento a buscar:");
-        Operario encontrado = miModelo.consultarOperario(doc);
-        
-        if (encontrado != null) {
-            txtDoc.setText(encontrado.getDocumento());
-            txtNombre.setText(encontrado.getNombre());
-            txtSueldo.setText(encontrado.getSueldo() + "");
-            txtAntiguedad.setText(encontrado.getAntiguedad() + "");
-            lblResultado.setText("Sueldo Final: $" + encontrado.getSueldoFinal());
-        } else {
-            JOptionPane.showMessageDialog(this, "El operario no existe.");
+    private void hacerConsulta() {
+        String documentoBuscar = JOptionPane.showInputDialog(this, "Ingrese el documento del operario:");
+        if (documentoBuscar != null) {
+            Operario oper = miModelo.consultarOperario(documentoBuscar);
+            if (oper != null) {
+                // "Pintamos" los datos de vuelta en los cuadros de texto (Mapeo inverso)
+                txtDoc.setText(oper.getDocumento());
+                txtNombre.setText(oper.getNombre());
+                txtSueldo.setText(oper.getSueldo() + "");
+                txtAntiguedad.setText(oper.getAntiguedad() + "");
+                lblResultado.setText("Sueldo a pagar: $ " + String.format("%.2f", oper.getSueldoFinal()));
+            } else {
+                JOptionPane.showMessageDialog(this, "Operario no encontrado.");
+            }
         }
+    }
+
+    private void limpiarCampos() {
+        txtDoc.setText("");
+        txtNombre.setText("");
+        txtSueldo.setText("");
+        txtAntiguedad.setText("");
+        lblResultado.setText("Sueldo a pagar: $ 0.00");
     }
 }
